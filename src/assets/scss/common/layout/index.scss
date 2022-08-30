@@ -1,0 +1,35 @@
+
+// 页面布局配置
+
+.sun-card-title{ // 区域标题
+  margin-bottom: 2rem;
+  border-bottom: 0.1rem solid $colorBorder;
+  padding-bottom:1rem;
+  font-size: $titleFont;
+  font-weight: bold;
+  text-align: left;
+}
+
+// 区域块配置
+.sun-content{
+  background: $color_model;
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+// 区域块配置
+.sun-content-center{
+  position: relative;
+  height: calc(100vh - 12.5rem);
+  overflow: auto;
+}
+/*card中心区域*/
+.sun-card-content{
+  position: absolute;
+  top: 5rem;
+  bottom: 2rem;
+  left: 2rem;
+  right: 2rem;
+  margin-top: 2rem;
+  overflow: auto;
+}

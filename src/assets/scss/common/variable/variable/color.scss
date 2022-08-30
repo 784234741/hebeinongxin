@@ -1,0 +1,32 @@
+// 基础 color
+$blue:#324157;
+$light-blue:#3A71A8;
+$red:#C03639;
+$pink: #E65D6E;
+$green: #30B08F;
+$tiffany: #4AB7BD;
+$yellow:#FEC171;
+$panGreen: #30B08F;
+$primary :#409eff;
+
+$color_main:#1e55f2;//主色调
+$color_font:#383e57;// 文本色
+$color_model:#fff;// 区域块背景
+$color_content:#eceff3; // 右侧整体区域背景
+
+//左侧区域 begin
+$menuText:$color_font; // 文本颜色
+$menuActiveText:#409EFF; // 当前选中路由行文本颜色
+$subMenuActiveText:$color_font; // 当前父级菜单文本颜色
+
+$menuBg:#fff; // 左侧区域背景色
+$menuHover:lighten($color_main,30%); //父级节点行 hover颜色
+
+$subMenuBg:#fff; // 子节点区域背景色
+$subMenuHover:$menuHover;  // 子节点行 hover背景色
+//左侧区域 end
+
+$colorBorder: #DCDFE6; // 边框线颜色
+
+//loading
+$colorLoading: #fff; // 首页：加载中文本及颜色调整

@@ -1,0 +1,11 @@
+
+@import './normalize.scss'; //初始化样式配置
+
+@import './element-ui/element-ui.scss'; //组件element-ui
+@import './variable'; // 公共变量配置
+@import './loading'; // 加载中
+
+@import './sidebar'; // 左侧菜单
+@import './btn'; // 按钮
+@import './form'; // 表单
+@import './layout'; // 内容区域结构布局

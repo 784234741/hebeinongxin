@@ -1,0 +1,5 @@
+# 忽略语法检查的目录
+build/*.js
+src/assets
+public
+dist

@@ -1,0 +1,12 @@
+// 加载中
+
+// 首页加载中配置
+.loadingSty {
+  .el-loading-spinner i{
+    color: $colorLoading;
+    font-size: 5rem;
+  }
+  .el-loading-spinner .el-loading-text{
+    color: $colorLoading;
+  }
+}

@@ -1,0 +1,20 @@
+# https://editorconfig.org
+root = true # 控制 EditorConfig 约定的范围 
+
+[*]
+# 设置字符集
+charset = utf-8
+# 缩进风格 可选"space"、"tab"
+indent_style = space
+# 缩进大小 可以是数字（空格数）， tab(如果tab大小没设置则按编辑器默认tab大小)
+indent_size = 2
+# 结尾换行符，可选"lf"、"cr"、"crlf"
+end_of_line = lf
+ #设为true表明使文件以一个空白行结尾
+insert_final_newline = true
+# 删除行尾空格
+trim_trailing_whitespace = true
+
+[*.md] # 匹配.md结尾的文件
+insert_final_newline = false
+trim_trailing_whitespace = false
