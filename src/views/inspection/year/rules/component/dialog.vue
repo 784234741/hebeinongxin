@@ -73,8 +73,12 @@
       </div>
     </div>
     <div class="dialog-footer">
-      <el-button @click="dialogClose">取 消</el-button>
-      <el-button type="primary" @click="dialogSubmit">确 定</el-button>
+      <el-button type="danger" @click="dialogClose">取 消</el-button>
+      <el-button
+        v-if="datas.btn !== 'detail'"
+        type="primary"
+        @click="dialogSubmit"
+      >确 定</el-button>
     </div>
   </el-dialog>
 </template>
@@ -82,7 +86,7 @@
 <script>
 import elDragDialog from '@/directive/el-drag-dialog' // base on element-ui
 import { dictionaryFieds } from '@/utils/dictionary' // 字典配置
-import { commonBlank } from '@/utils/common'
+import { commonBlank, deepClone } from '@/utils/common'
 import {
   commonMsgWarn,
   commonMsgConfirm,
@@ -182,18 +186,19 @@ export default {
   },
   mounted() {
     this.initConfig()
-    // console.log(this.datas)
   },
   methods: {
     /**
      * 修改和详情反显表单配置
      */
     initData() {
+      this.oldformData = deepClone(this.datas)
       const { enterNum, outPutNum, enterObj, outPutObj } = this.datas
       this.dialog.allEnterConfig = []
       this.dialog.enterNum = 0
       this.dialog2.allOutputConfig = []
       this.dialog2.outNum = 0
+      // 根据输入配置个数动态创建表单
       const numArr = []
       let nums = 0
       while (nums < enterNum) {
@@ -203,6 +208,8 @@ export default {
       numArr.forEach((item) => {
         this.addEnter()
       })
+
+      // 根据输出配置个数动态创建表单
       const outNumArr = []
       let outNum = 0
       while (outNum < outPutNum) {
@@ -212,9 +219,12 @@ export default {
       outNumArr.forEach((item) => {
         this.addOutput()
       })
+
       this.$nextTick(() => {
         this.dialog.allEnterData = enterObj
         this.dialog2.allOutputData = outPutObj
+
+        // 根据类型下拉框数据回显后面values值和下拉框数据
         for (const item in this.dialog.allEnterData) {
           if (item.includes('typeData')) {
             const num = parseInt(item.slice(-1))
@@ -290,7 +300,7 @@ export default {
      * @param {Array} param // 选择的值和后面表单的类型
      */
     enterChange(param) {
-      console.log(param)
+      // console.log(param)
       if (
         param[0] === '0004' ||
         param[0] === '0009' ||
@@ -323,17 +333,16 @@ export default {
         this.dialog.allEnterConfig[param[1]].type = 'input'
       }
       if (param[2]) {
-        console.log(this.dialog.allEnterData)
         this.dialog.allEnterData['values' + param[1]] = ''
       }
-      console.log(this.dialog)
+      // console.log(this.dialog)
     },
     /**
      * 切换输入配置规则设置value
      * @param {Array} param // 选择的值和后面表单的类型
      */
     outputChange(param) {
-      console.log(param)
+      // console.log(param)
       if (param[0] === '0002') {
         this.dialog2.allOutputConfig[param[1]].values = dictionaryFieds(
           'AM9800',
@@ -352,7 +361,7 @@ export default {
       }
     },
     /**
-     * 初始化输入配置下拉框值
+     * 初始化输入和输出配置下拉框值
      */
     initConfig() {
       this.$nextTick(() => {
@@ -406,10 +415,12 @@ export default {
       console.log(this.dialog)
       console.log(this.dialog2)
       console.log(this.datas.formData)
+      console.log(this.oldformData.formData)
       this.$refs['refFormDialog'].validateForm()
       this.$refs.enterForm.validate((valid) => {
         // 表单校验
         if (valid) {
+          // 拼接输入配置
           const { allEnterConfig, allEnterData, enterData } = this.dialog
           let str = ''
           for (const key of allEnterConfig.keys()) {
@@ -423,6 +434,7 @@ export default {
               }
             }
           }
+          // 拼接输出配置
           const { allOutputConfig, allOutputData, outputData } = this.dialog2
           let str2 = ''
           for (const key of allOutputConfig.keys()) {
@@ -434,40 +446,71 @@ export default {
               }
             }
           }
-          const rule_param = str + '@' + str2
-          console.log(rule_param)
+          const rule_param = str + '@' + str2 // 拼接后的输入输出配置
           if (commonBlank(str) && commonBlank(str2)) {
             commonMsgWarn('输入或输出规则为空', this)
             return
           }
           commonMsgConfirm('是否确认提交？', this, (flag) => {
             if (flag) {
-              const { rule_desc, is_open, prio_level, organ_no, rule_type } =
-                this.datas.formData
-              const msg = {
-                parameterList: [
-                  {
-                    rule_no:
-                      this.datas.btn === 'add'
-                        ? ''
-                        : this.datas.formData.rule_no,
-                    rule_table: '',
-                    rule_desc,
-                    is_open,
-                    prio_level,
-                    rule_param,
-                    organ_no,
-                    is_lock:
-                      this.datas.btn === 'add'
-                        ? 'admin'
-                        : this.datas.formData.is_lock,
-                    rule_type
-                  }
-                ],
-                oper_type: 'OP001'
+              let msg = {}
+              if (this.datas.btn === '新增') {
+                const { rule_desc, is_open, prio_level, organ_no, rule_type } =
+                  this.datas.formData
+                msg = {
+                  parameterList: [
+                    {
+                      rule_no:
+                        this.datas.btn === 'add'
+                          ? ''
+                          : this.datas.formData.rule_no,
+                      rule_table: '',
+                      rule_desc,
+                      is_open,
+                      prio_level,
+                      rule_param,
+                      organ_no,
+                      is_lock:
+                        this.datas.btn === 'add'
+                          ? 'admin'
+                          : this.datas.formData.is_lock,
+                      rule_type
+                    }
+                  ],
+                  oper_type: 'OP001'
+                }
+              } else {
+                const {
+                  rule_no,
+                  rule_desc,
+                  is_open,
+                  prio_level,
+                  organ_no,
+                  rule_type
+                } = this.datas.formData
+                msg = {
+                  parameterList: [
+                    {
+                      rule_no,
+                      rule_desc,
+                      is_open,
+                      prio_level,
+                      rule_param,
+                      organ_no,
+                      is_lock: 'admin',
+                      rule_table: '',
+                      rule_type
+                    }
+                  ],
+                  oper_type: 'OP003',
+                  oldRuleDesc: this.oldformData.formData.rule_desc,
+                  oldIsOpen: this.oldformData.formData.is_open,
+                  oldRuleParam: this.oldformData.formData.rule_param,
+                  oldOrganNo: this.oldformData.formData.organ_no,
+                  oldRuleType: this.oldformData.formData.rule_type
+                }
               }
               ruleQuery(msg).then((res) => {
-                console.log(res)
                 const { retCode, retMsg } = res
                 if (retCode === '200') {
                   commonMsgSuccess(retMsg, this)
@@ -524,5 +567,8 @@ export default {
       padding-left: 100px;
     }
   }
+}
+.dialog-footer {
+  text-align: right;
 }
 </style>

@@ -35,7 +35,7 @@ export default {
     return {
       config: config(this), // 表单配置
       defaultForm: {
-        open_organ: '',
+        organ_no: '',
         rule_no: '',
         rule_desc: '',
         is_open: '',
@@ -64,7 +64,7 @@ export default {
      ** 查询数据
      */
     queryList() {
-      // this.$refs['tableListRef'].queryList()
+      this.$refs['tableListRef'].queryList(this.defaultForm)
     }
   }
 }

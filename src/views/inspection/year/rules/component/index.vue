@@ -77,12 +77,11 @@ import {
   commonMsgConfirm,
   commonMsgSuccess
 } from '@/utils/message.js' // 提示信息
-import { SunTable, SunButton, SunFormDialog } from '@/components' // 公共组件
-import { commonBlank, deepClone } from '@/utils/common' // 公共方法
+import { SunTable, SunButton } from '@/components' // 公共组件
+import { commonBlank } from '@/utils/common' // 公共方法
 import { dateNowFormat } from '@/utils/date.js' // 日期格式化
-import { dateTimeFormat, date10Format } from '@/filters' // 日期格式化
+import { date10Format } from '@/filters' // 日期格式化
 import { column, config } from './info' // 配置信息
-import { dictionaryFieds } from '@/utils/dictionary' // 字典配置
 
 import Dialog from './dialog'
 import { yearCheck } from '@/api' // 接口
@@ -111,7 +110,7 @@ export default {
         pageList: {
           totalNum: 0,
           page: 1, // 当前页
-          pageSize: 10 // 当前页显示条数
+          pageSize: 15 // 当前页显示条数
         }
       }, // 表格数据
       dialog: {
@@ -135,6 +134,7 @@ export default {
         enterConfig: [], // 输入配置数据
         enterObj: {}, // 输入配置对象
         enterNum: 0, // 输入配置后面数字
+        conditionNum: 1, // 条件与和或后面的数字
         outPutConfig: [], // 输出配置数据
         outPutObj: {}, // 输出配置对象
         outPutNum: 0 // 输出配置后面数字
@@ -144,9 +144,11 @@ export default {
     }
   },
   mounted() {
+    this.dialog.config.organ_no.options = this.$store.getters.organTree
     this.queryList()
     this.getDialogData()
-    this.dialog.config.organ_no.options = this.$store.getters.organTree
+    // this.$nextTick(() => {
+    // })
   },
   methods: {
     /**
@@ -226,6 +228,34 @@ export default {
         commonMsgWarn('请选择删除的数据', this)
         return
       }
+      const { rule_no, is_lock, organ_no } = this.tableRow
+      commonMsgConfirm('是否确认删除？', this, (flag) => {
+        if (flag) {
+          console.log(this.tableRow)
+          if (this.tableRow.is_open === '1') {
+            commonMsgWarn(
+              `编号${this.tableRow.rule_no}为启用状态，无法删除`,
+              this
+            )
+            return
+          } else {
+            const msg = {
+              parameterList: [{ rule_no }],
+              oper_type: 'OP002',
+              is_lock,
+              organ_no
+            }
+            ruleQuery(msg).then((res) => {
+              console.log(res)
+              const { retCode, retMsg } = res
+              if (retCode === '200') {
+                commonMsgSuccess(retMsg, this)
+                this.queryList()
+              }
+            })
+          }
+        }
+      })
     },
     /**
      * 修改回显输入输出配置值
@@ -236,15 +266,13 @@ export default {
         enterObj: {},
         enterNum: 0,
         outPutObj: {},
-        outPutNum: 0
+        outPutNum: 0,
+        conditionNum: 1
       })
-      const enterArr = param.rule_param.match(/\((.+?)\)/g) // 输入配置值
-      const output = param.rule_param.match(/@(\S*)/)[1].replace('#head#', '') // 输出配置值
-      const outputArr = output.split('##')
-      outputArr.pop()
 
-      let arr = []
       // 设置输入配置值(对象数组)
+      const enterArr = param.rule_param.match(/\((.+?)\)/g) // 输入配置值
+      let arr = []
       for (const item of enterArr) {
         const arr2 = item.split('##')
         arr = [...arr, ...arr2]
@@ -267,7 +295,24 @@ export default {
           this.dialog.enterNum++
         }
       }
+
+      // 设置条件(&&和||)
+      let conditions = param.rule_param.match(/d#(.+?)\(/g) // 条件&&和||
+      if (!commonBlank(conditions)) {
+        conditions = conditions.map((item) => {
+          return item.substring(2, 4)
+        })
+        for (const val of conditions) {
+          const { conditionNum } = this.dialog
+          enterObj['operSym' + conditionNum] = val
+          this.dialog.conditionNum++
+        }
+      }
+
       // 设置输出配置值(对象数组)
+      const output = param.rule_param.match(/@(\S*)/)[1].replace('#head#', '') // 输出配置值
+      const outputArr = output.split('##')
+      outputArr.pop()
       for (const [key, val] of outputArr.entries()) {
         const { outPutNum } = this.dialog
         if (key % 3 === 0) {
@@ -281,6 +326,7 @@ export default {
           this.dialog.outPutNum++
         }
       }
+      console.log(this.dialog)
     },
     /**
      * 弹框取消按钮
@@ -329,21 +375,36 @@ export default {
     /*
      ** 查询数据
      */
-    queryList() {
-      const msg = {
-        parameterList: [
-          {
-            is_open: '',
-            organ_no: '',
-            rule_no: '',
-            rule_desc: '',
-            rule_type: ''
-          }
-        ],
+    queryList(param) {
+      console.log(param)
+      let msg = {
         oper_type: 'OP004',
-        currentPage: 1,
-        pageSize: 15,
-        organ_no: '#01121'
+        currentPage: this.tableData.pageList.page,
+        pageSize: this.tableData.pageList.pageSize,
+        organ_no: '#' + this.$store.getters.organNo
+      }
+      if (!commonBlank(param)) {
+        msg = {
+          ...msg,
+          parameterList: [
+            {
+              ...param
+            }
+          ]
+        }
+      } else {
+        msg = {
+          ...msg,
+          parameterList: [
+            {
+              is_open: '',
+              organ_no: '',
+              rule_no: '',
+              rule_desc: '',
+              rule_type: ''
+            }
+          ]
+        }
       }
       ruleQuery(msg).then((res) => {
         const {

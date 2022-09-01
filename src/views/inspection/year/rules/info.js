@@ -3,11 +3,11 @@ import { dictionaryFieds } from '@/utils/dictionary' // 字典配置
 // 表单配置
 export const config = () => {
   return {
-    open_organ: {
+    organ_no: {
       component: 'select-tree',
       label: '机构号',
       colSpan: 8,
-      name: 'open_organ',
+      name: 'organ_no',
       config: {
         rules: [{ required: false }]
       },
@@ -53,10 +53,7 @@ export const config = () => {
       componentProps: {
         clearable: true
       },
-      options: [
-        { label: '0-未启用', value: '0' },
-        { label: '1-启用', value: '1' }
-      ]
+      options: dictionaryFieds('IS_OPEN')
     },
     rule_type: {
       component: 'select',

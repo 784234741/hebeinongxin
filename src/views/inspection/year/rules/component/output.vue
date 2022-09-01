@@ -52,6 +52,7 @@
           <el-select
             v-model="formValue['values' + endIndex]"
             :disabled="types === 'detail' ? true : false"
+            @change="handleChange"
           >
             <el-option
               v-for="item in data.values"
@@ -122,8 +123,16 @@ export default {
      * @param {String}param 选择的值
      */
     handleType(param) {
+      this.handleChange()
       const val = param.slice(1)
       this.$emit('outputData', [val, this.posIndex])
+    },
+    /**
+     * 处理下拉框切换不了值
+     * @param {String}param 选择的值
+     */
+    handleChange() {
+      this.$forceUpdate()
     }
   }
 }
